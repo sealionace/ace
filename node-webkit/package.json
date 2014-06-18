@@ -1,0 +1,21 @@
+{
+  "name": "package",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "window":{
+   "title": "teste webkit",
+   "toolbar": false,
+   "frame": false,
+   "width": 850,
+    "height": 500,
+    "position": "center",
+    "resizable": false
+  },
+
+  "author": "",
+  "license": "ISC"
+}
