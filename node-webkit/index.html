@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
@@ -21,6 +22,11 @@
     <!-- Local JavaScript -->
     <script src="js/docs.js"></script>
     <script src="js/github.info.js"></script>
+	
+	<!-- JQuery -->
+	<script src="jquery-2.1.1.js" type="text/javascript"></script>
+	<script src="funcoes.js" type="text/javascript"></script>
+	
 	<style>
 	body {
 		margin: 40px 20px;
@@ -38,13 +44,13 @@
         <input type="submit" name="enviar" value="Enviar" />
     </form>
     
-            <div class="tile"></div>
-            <div class="tile double"></div>
-            <div class="tile selected"></div>
+            <div id="x0y0" class="tile"></div>
+            <div id="x1y0" class="tile double"></div>
+            <div id="x2y0" class="tile bg-red"></div>
             <p></p>
     
     <!-- Carrinho de compras -->
-    <div class="tile bg-darkPink"> <!-- cor do fundo -->
+    <div id="x3y0" class="tile bg-darkPink"> <!-- cor do fundo -->
         <div class="tile-content icon">
             <i class="icon-cart-2"></i> <!-- ícone do carrinho -->
         </div>
@@ -55,7 +61,7 @@
     
     
     <!-- Águia -->
-    <div class="tile double">   <!-- tipo=double, duas posições -->
+    <div id="x0y1" class="tile double">   <!-- formato=double, duas posições -->
         <div class="tile-content image">    <!-- tipo=imagem -->
             <img src="componentes/images/4.jpg"> <!-- Águia -->
         </div>
@@ -68,14 +74,14 @@
     
     
     <!-- Windows -->
-    <div class="tile bg-darkBlue"> <!-- cor do fundo -->
+    <div id="x1y1" class="tile bg-darkBlue"> <!-- cor do fundo -->
         <div class="tile-content image">    <!-- tipo=imagem -->
             <img src="componentes/images/Windows-8-Logo.png"> <!-- Águia -->
         </div>
     </div>
     
     <!-- Imagens Dinâmicas -->
-    <div class="tile live" data-role="live-tile" data-effect="slideRight"> <!-- sem data-effect = slideLeft -->
+    <div id="x2y1" class="tile live" data-role="live-tile" data-effect="slideRight"> <!-- sem data-effect = slideLeft -->
             <div class="tile-content image">
                 <img src="componentes/images/pd/eda.jpg">
             </div>
@@ -110,10 +116,14 @@
     <div id="mensagens">
         
     </div>
-    
+	
+    <!-- Javascript -->
     <script type="text/javascript">
         (function(){
-            
+            var xAtu = 0;
+			var yAtu = 0;
+			document.getElementById("x"+xAtu+"y"+yAtu).style.outline = "#3090C7 solid 5px"; //seta o primeiro Tile como selecionado, visualmente
+			
             var net = require('net');
             var msgDiv = document.getElementById("mensagens");
             var mensagem = "não vai ter mensagem";
@@ -122,8 +132,30 @@
             var server = net.createServer(function(s) {
                 
                 s.on('data', function(buf) {
-                    //msgDiv.innerHTML += "<b>Alguém&gt;</b> " + buf.toString('ascii') + "<br />";
-                    msgDiv.innerHTML += "<div class='tile double'> <div class='tile-content image'>  <img src='componentes/images/5.jpg'> </div> <div class='brand bg-dark opacity'><span class='text'> "+buf.toString('ascii')+" </span> </div> </div>";
+					var mensagem = buf.toString('ascii');
+					var xAnterior = xAtu;
+					var yAnterior = yAtu;
+					if (mensagem == "direita")
+					 xAtu += 1;
+					else if (mensagem == "esquerda"){
+					 if (xAtu>0)
+					  xAtu -= 1;
+					 }
+					else if (mensagem == "cima"){
+					 if (yAtu>0)
+					  yAtu -= 1;
+					 }
+					else if (mensagem == "baixo")
+					 yAtu += 1;
+					
+					if (xAnterior != xAtu || yAnterior != yAtu){
+						document.getElementById("x"+xAnterior+"y"+yAnterior).style.outline = "";		//deixa o que estava selecionado antes sem borda
+						document.getElementById("x"+xAtu+"y"+yAtu).style.outline = "#3090C7 solid 5px"; //seta a cor em volta do tile atual
+					}
+					
+					msgDiv.innerHTML += "<b>X: </b>" + xAtu + " <b>Y: </b>" +yAtu+ "<br />";
+                    //Escreve no chat a mensagem recebida :		msgDiv.innerHTML += "<b>Alguém&gt;</b> " + buf.toString('ascii') + "<br />";
+                    //Adiciona um tile :		msgDiv.innerHTML += "<div class='tile double'> <div class='tile-content image'>  <img src='componentes/images/5.jpg'> </div> <div class='brand bg-dark opacity'><span class='text'> "+buf.toString('ascii')+" </span> </div> </div>";
                 });
                 sockets.push(s);
                 
