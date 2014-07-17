@@ -1,0 +1,149 @@
+#!/usr/bin/php
+<?php
+// definições
+define('DB_FILE', 'diario.sqlite3');
+$dependencias = array("sqlite3", "pdo_sqlite");
+
+function perror($msg, $code = 1) {
+	fputs(STDERR, $msg + "\n");
+	exit($code);
+}
+
+function out($msg) {
+	fputs(STDOUT, $msg);
+}
+
+function read(&$msg) {
+	$msg = fgets(STDIN);
+}
+
+function sn() {
+	$sn = "";
+	while (!in_array($sn, array("s", "n"))) {
+		$sn = strtolower(fread(STDIN, 1));
+	}
+	fgets(STDIN);
+
+	return $sn == "s";
+}
+
+// dependências
+foreach ($dependencias as $dependencia) {
+	if (!extension_loaded($dependencia))
+		perror("A extensão $dependencia é necessária");
+}
+
+try {
+	// banco de dados
+	$db = new PDO("sqlite:" . DB_FILE);
+	$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+	// tabela
+	$db->exec(
+		"CREATE TABLE IF NOT EXISTS diario (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			escopo TEXT,
+			texto TEXT,
+			data INTEGER)"
+	);
+
+	if ($argc < 2)
+		$argv[1] = "novo";
+	else
+		if (!in_array(trim($argv[1]), array("novo", "ver")))
+			perror("Uso: $argv[0] [novo|ver]");
+
+
+	if (trim($argv[1]) == "novo") 
+	{
+		out("Diário de bordo virtual v0.1\n");
+
+		ler:
+
+		out("\nEntre com a data (dd/mm/aaaa, vazio para hoje): ");
+		read($data);
+		$data = trim($data);
+
+		if (!$data) {
+			$data = time();
+		} else {
+			$data = date_create_from_format("d/m/Y", $data);
+			if ($data)
+				$data = $data->getTimestamp();
+			else
+				$data = time();
+		}
+
+		out("\nEntre com o escopo (opcional): ");
+		read($escopo);
+		$escopo = trim($escopo);
+
+		out("\nEntre com a descrição da atividade (deixe duas linhas em branco para concluir):\n");
+		$umalinha = false;
+		$texto = "";
+		while (true) {
+			read($linha);
+
+			if (!trim($linha)) {
+				if ($umalinha)
+					break;
+				else
+					$umalinha = true;
+			} else {
+				$umalinha = false;
+			}
+
+			$texto .= $linha;
+		}
+		$texto = trim($texto);
+
+		out(sprintf(
+			"\n\nData: %s\nEscopo: %s\nAtividade:\n%s\n\nConfirma? [s/n] ",
+			date("d/m/Y", $data),
+			$escopo,
+			$texto
+		));
+
+		if (sn()) {
+			$qry = $db->prepare("INSERT INTO diario(escopo, texto, data) VALUES(:e, :t, :d)");
+
+			$qry->bindValue(":e", $escopo, SQLITE3_TEXT);
+			$qry->bindValue(":t", $texto, SQLITE3_TEXT);
+			$qry->bindValue(":d", $data, SQLITE3_INTEGER);
+
+			$qry->execute();
+		}
+
+		out("\nSucesso. Incluir outro? [s/n] ");
+		if (sn())
+			goto ler;
+
+	} elseif (trim($argv[1]) == "ver") {
+		$qry = $db->query("SELECT * FROM diario ORDER BY data, escopo");
+
+		$dataA = "";
+		$escopo = "";
+		foreach ($qry as $row) {
+			$data = date("d/m/Y", $row['data']);
+			if ($data != $dataA) {
+				$escopo = "";
+				$dataA = $data;
+				out("\n[" . $data . "]\n");
+			}
+
+			if ($escopo != $row['escopo']) {
+				$escopo = $row['escopo'];
+				out("\n== $escopo ==\n");
+			}
+
+			out("-------------------------------------------------------\n");
+			out("$row[texto]\n");
+			out("-------------------------------------------------------\n");
+		}
+	}
+
+	$db = null;
+
+} catch (PDOException $ex) {
+	perror("Erro do PDO: " . $ex->getMessage());
+}
