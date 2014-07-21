@@ -68,12 +68,13 @@ static ssize_t vmouse_write(
 			}
 			else if (variante == 'a') /* absoluto */
 			{
-				input_report_key(vmouse_input_dev, BTN_TOUCH, 1);
+				printk(KERN_INFO "vmouse_c: abs nao implementado\n");
+				/*input_report_key(vmouse_input_dev, BTN_TOUCH, 1);
 				input_report_key(vmouse_input_dev, BTN_TOUCH, 0);
 				
 				input_report_abs(vmouse_input_dev, ABS_X, p1);
 				input_report_abs(vmouse_input_dev, ABS_Y, p2);
-				printk(KERN_INFO "vmouse_m: abs X:%d Y:%d\n", p1, p2);
+				printk(KERN_INFO "vmouse_m: abs X:%d Y:%d\n", p1, p2);*/
 			}
 			else
 			{
@@ -205,12 +206,22 @@ static ssize_t vmouse_write(
 		}
 		break;
 	default:
-		if (is_empty(buffer))
+		/*if (is_empty(buffer))
 		{
 			return count;
-		}
+		}*/
 		
-		printk(KERN_INFO "vmouse: comando %c invalido\n", comando);
+		if (is_space(*buffer)) {
+			lido = 0;
+			while (is_space(*buffer)) {
+				buffer++;
+				lido++;
+			}
+		}
+		else 
+		{
+			printk(KERN_INFO "vmouse: comando %c invalido\n", comando);
+		}
 		return lido;
 		break;
 	}
@@ -266,12 +277,12 @@ int __init vmouse_init(void)
 	set_bit(BTN_TOUCH, vmouse_input_dev->keybit);
 
 	/* abs requer mais coisinhas chatas */
-	set_bit(EV_ABS, vmouse_input_dev->evbit);
+	/*set_bit(EV_ABS, vmouse_input_dev->evbit);
 	set_bit(ABS_X, vmouse_input_dev->absbit);
 	set_bit(ABS_Y, vmouse_input_dev->absbit);
 
 	input_set_abs_params(vmouse_input_dev, ABS_X, 0, 100, 0, 0);
-	input_set_abs_params(vmouse_input_dev, ABS_Y, 0, 100, 0, 0);
+	input_set_abs_params(vmouse_input_dev, ABS_Y, 0, 100, 0, 0);*/
 
 	/* registra o dispositivo no subsistema de entrada */
 	input_register_device(vmouse_input_dev);

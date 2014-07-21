@@ -5,3 +5,5 @@ vmouse/*
 !vmouse/vmouse.c
 !vmouse/Makefile
 !vmouse/README.md
+!vmouse/vmouse.ts
+!vmouse/vmouse.js
