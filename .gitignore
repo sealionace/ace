@@ -1,0 +1,7 @@
+*.o
+*.ko
+
+vmouse/*
+!vmouse/vmouse.c
+!vmouse/Makefile
+!vmouse/README.md
