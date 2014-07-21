@@ -31,8 +31,11 @@ O driver lê comandos em `/sys/devices/platform/vmouse/event`. Por exemplo:
 ##### Clique
 
 ``echo "cr" > /sys/devices/platform/vmouse/event``
+``echo "cpl" > /sys/devices/platform/vmouse/event``
 
-**Entrada:** ``c[r|l|m]``
+**Entrada:** ``c[p|r](r|l|m)``
+> *p* e *r* são opcionais (segundo parâmetro); indicam pressionar (*press*) e soltar (*release*). Se não especificado, o comportamento é de clique (pressionar seguido de soltar).
+
 > *r* para clique com o botão direito, *l* para clique com o botão esquerdo e *m* para clique com o botão do meio.
 
 ##### Rolagem vertical
@@ -49,5 +52,5 @@ O driver lê comandos em `/sys/devices/platform/vmouse/event`. Por exemplo:
 
 ## TODO
 
-* A implantação provê uma interface simples para comunicação com o Node.js via sistema de arquivos, porém não acho que liberar escrita em sysfs seja uma idéia interessante. Se houver tempo, pretendo criar uma interface D-Bus para a comunicação.
-* Implementar "clicar e arrastar": separar clique em press e release
+* A implantação provê uma interface simples para comunicação com o Node.js via sistema de arquivos, porém não acho que a escrita em sysfs esteja interessante (o caminho principalmente, fica gigante_. Se houver tempo, pretendo criar uma interface D-Bus para a comunicação.
+* Tentar descobrir como fazer o movimento absoluto funcionar :/
